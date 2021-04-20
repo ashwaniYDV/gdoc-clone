@@ -31,7 +31,7 @@ const TextEditor = () => {
 
     // handle connection
     useEffect(() => {
-        const _socket = io('http://localhost:3001')
+        const _socket = io('http://localhost:4500')
         setSocket(_socket)
 
         return () => {

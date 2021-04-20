@@ -1,26 +1,34 @@
+const path = require('path')
+const http = require('http')
+const express = require('express')
+const socketio = require('socket.io')
 const mongoose = require('mongoose')
+
 const Document = require('./Document')
+const { DB_URI } = require('./configs');
 
-// mongoose.connect('mongodb://localhost/gdocs-clone', {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-//   useFindAndModify: false,
-//   useCreateIndex: true,
-// })
+const app = express()
 
-mongoose.connect('mongodb+srv://test1234:test1234@cluster0.n7b8w.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useFindAndModify: false,
-  useCreateIndex: true,
-})
-
-const io = require('socket.io')(3001, {
+const server = http.createServer(app)
+const io = socketio(server, {
   cors: {
     origin: 'http://localhost:3000',
     methods: ['GET', 'POST'],
-  },
+  }
 })
+
+// Connecting to database
+mongoose
+    .connect(DB_URI, {
+        useNewUrlParser: true,
+        useCreateIndex: true,
+        useFindAndModify: false,
+        useUnifiedTopology: true
+    })
+    .then(() => console.log('DB connected'))
+    .catch((err) => console.log(err))
+//set mongoose's Promise equal to global Promise since mongoose's Promise version is depricated
+mongoose.Promise = global.Promise;
 
 const defaultValue = ''
 
@@ -49,3 +57,11 @@ async function findOrCreateDocument(id) {
   if (document) return document
   return await Document.create({ _id: id, data: defaultValue })
 }
+
+app.use(express.static(path.join(__dirname, './client/build')));
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '/client/build/index.html'));
+})
+
+const PORT = process.env.PORT || 4500;
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
