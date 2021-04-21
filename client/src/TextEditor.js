@@ -31,7 +31,7 @@ const TextEditor = () => {
 
     // handle connection
     useEffect(() => {
-        const _socket = io('http://localhost:4500')
+        const _socket = io('https://ashwanidoc.herokuapp.com')
         setSocket(_socket)
 
         return () => {
